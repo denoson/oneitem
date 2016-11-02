@@ -1,2 +1,2 @@
 # oneitem
-OneItem php genetrator
+OneItem is a universal HTML generator for php
