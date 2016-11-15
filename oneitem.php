@@ -1119,6 +1119,28 @@ class OneItem {
     }
     
     
+
+    
+    public function add_tag_pairs($tag1, $value1, $tag2 = '', $value2 = '') {
+        $max_arg = func_num_args();
+        for ($i = 0; $i < $max_arg; $i+=2) {
+            $this->add_tag(func_get_arg($i), func_get_arg($i+1));
+        }
+    }
+
+
+
+    public function add_tag_pairs_ex($gr_id, $gr_class, $gr_tag = 'div', $tag1 = '', $value1 = '') {
+       $group = $this->add_tag($gr_tag);
+
+       $max_arg = func_num_args();
+       for ($i = 3; $i < $max_arg; $i+=2) {
+            $group->add_tag(func_get_arg($i), func_get_arg($i+1));
+        }
+    }
+
+
+
     
     /**
      * Add item as sub-item of another tag
@@ -1191,7 +1213,7 @@ class OneItem {
      * @return OneItem
      */
     public function add_p($value) {
-        return $this->add_ex($id, $classes, 'p', $value);
+        return $this->add_ex('', '', 'p', $value);
     }
 
     /**
@@ -1357,7 +1379,7 @@ class OneItem {
      * @return OneItem
      */
     public function add_div($value = '') {
-        return $this->add_ex($id, $classes, 'div', $value);
+        return $this->add_div_ex('', '', $value);
     }
 
     /**
