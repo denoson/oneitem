@@ -2,7 +2,7 @@
 OneItem is a universal HTML generator for php
 
 No more: 
- echo '<h2 id="my-id" class="my-class">My Header</h2>';
+ echo '&lt;h2 id="my-id" class="my-class"&gt;My Header&lt;/h2&gt;';
  
  Just use OneItem class:
  
