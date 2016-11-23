@@ -1,15 +1,17 @@
 <?php
 
-/**  
+/**
  * @copyright (c) 2016, Denis Vigovski
  * @package OneItem
- * @version   1.0
+ * @version   1.1
  * @author    Denis V. <denoson+oneitem@gmail.com>
 
  * @license   http://www.softartstudio.com Free for personal use, for commercial use: $5 per site. If you want to use more 10 sites please contact with me
  */
-
-
+/**
+ * Used for class version and check for existing
+ */
+define('ONEITEM', '1');
 
 define('INNER_TAG_VALUE', 'itv');
 define('COLLECTION_ITEM_ID', 'coll-item-id');
@@ -94,9 +96,6 @@ function oi_auto_class($auto_class, $index) {
     }
 }
 
-
-
-
 /**
  * For logging and debugging
  * @param string $mess
@@ -143,8 +142,6 @@ function oi_check_num($number, $min_value, $max_value) {
     } else
         return $number;
 }
-
-
 
 /**
  * Simple and powerfull HTML structure generator
@@ -247,7 +244,6 @@ class OneItem {
      */
     public $raw = '';
 
-    
     /**
      * OneItem constructor
      * 
@@ -258,7 +254,7 @@ class OneItem {
      * @param string $value Default value for element 
      * @param string $title Element title (if used)
      * @param string $url Element link (if exists)
-     */    
+     */
     function __construct($parent = null, $id = '', $classes = '', $tag = '', $value = '', $title = '', $url = '') {
 
         oi_log('__construct: ' . "id: $id, class: $classes, tag: $tag, value: $value");
@@ -289,7 +285,9 @@ class OneItem {
         if ($tag_name == '') {
             return false;
         }
-        if(OI_DEBUG) { oi_log('init_tag_wizard 1: ' . $this->get_debug_info()); }
+        if (OI_DEBUG) {
+            oi_log('init_tag_wizard 1: ' . $this->get_debug_info());
+        }
         $arr_search = array('/', '{', '[', ',');
         $clear_tag = str_replace($arr_search, ' ', $tag_name);
         $arr_tags = explode(' ', $clear_tag);
@@ -322,7 +320,9 @@ class OneItem {
         }
 
         $this->_wizard_params_sync();
-        if(OI_DEBUG) {oi_log('init_tag_wizard 2: ' . $this->get_debug_info());}
+        if (OI_DEBUG) {
+            oi_log('init_tag_wizard 2: ' . $this->get_debug_info());
+        }
     }
 
     /**
@@ -330,7 +330,9 @@ class OneItem {
      * @param string $tag_name
      */
     private function _wizard_forms($tag_name) {
-        if(OI_DEBUG) {oi_log('_wizard_forms:' . $tag_name);}
+        if (OI_DEBUG) {
+            oi_log('_wizard_forms:' . $tag_name);
+        }
         $tag_name_src = $tag_name;
 
         $start1 = strpos($tag_name, '[');
@@ -407,7 +409,9 @@ class OneItem {
      * @param string $tag_name
      */
     private function _wizard_params($tag_name) {
-        if(OI_DEBUG) {oi_log('_wizard_params:' . $tag_name);}
+        if (OI_DEBUG) {
+            oi_log('_wizard_params:' . $tag_name);
+        }
         // extract all possible parameters [param1=qwe,param2=asd,param3=zxc]
         if ($tag_name == '') {
             return '';
@@ -440,7 +444,9 @@ class OneItem {
      * Sync common parameters in properties and parameters
      */
     private function _wizard_params_sync() {
-        if(OI_DEBUG) {oi_log('_wizard_params_sync');}
+        if (OI_DEBUG) {
+            oi_log('_wizard_params_sync');
+        }
         if ($this->params->param_exists(INNER_TAG_VALUE)) {
             $this->set_value($this->params->get_value(INNER_TAG_VALUE));
             //oi_log('sync itv: ' . $this->params->get_value(INNER_TAG_VALUE));
@@ -485,7 +491,9 @@ class OneItem {
      * @param string $tag_name
      */
     private function _wizard_struct($tag_name) {
-        if(OI_DEBUG) {oi_log('_wizard_struct: ' . $tag_name);}
+        if (OI_DEBUG) {
+            oi_log('_wizard_struct: ' . $tag_name);
+        }
         $this->_struct_parser($this, $tag_name);
     }
 
@@ -521,7 +529,9 @@ class OneItem {
             if ($symbol == '}') {
                 if ($level > 0) {
                     if ($level == 1) {
-                        if(OI_DEBUG) {oi_log('apply extracted subitem: ' . $buff_subitem);}
+                        if (OI_DEBUG) {
+                            oi_log('apply extracted subitem: ' . $buff_subitem);
+                        }
                         $level = 0;
                         $arr_subitems[] = $buff_subitem;
                         $buff_subitem = '';
@@ -543,16 +553,24 @@ class OneItem {
 
 
             if (($symbol == '/') && ($level <= 0) && (!$hook_params)) {
-                if(OI_DEBUG) {oi_log('s-delimeter /' . "item: $buff_item, subitem: $buff_subitem");}
+                if (OI_DEBUG) {
+                    oi_log('s-delimeter /' . "item: $buff_item, subitem: $buff_subitem");
+                }
                 if (!is_object($level_item)) {
-                    if(OI_DEBUG) {oi_log('create root item: ' . $buff_item);}
+                    if (OI_DEBUG) {
+                        oi_log('create root item: ' . $buff_item);
+                    }
                     $level_item = $this->create_item('', '', '', $buff_item);
                 } else {
                     if ($level_slash <= 0) {
-                        if(OI_DEBUG) {oi_log('assign params: ' . $buff_item);}
+                        if (OI_DEBUG) {
+                            oi_log('assign params: ' . $buff_item);
+                        }
                         $this->_wizard_params($buff_item);
                     } else {
-                        if(OI_DEBUG) {oi_log('add subitem (change level): ' . $buff_item);}
+                        if (OI_DEBUG) {
+                            oi_log('add subitem (change level): ' . $buff_item);
+                        }
                         $level_item = $level_item->add_ex('', '', $buff_item);
                     }
                 }
@@ -580,7 +598,9 @@ class OneItem {
 
         $buff_item = trim($buff_item);
         if (($buff_item == '') && (count($arr_subitems) > 0)) {
-            if(OI_DEBUG) {oi_log('v1: ' . $buff_item . ' si: ' . $buff_subitem);}
+            if (OI_DEBUG) {
+                oi_log('v1: ' . $buff_item . ' si: ' . $buff_subitem);
+            }
             // if only subitems without owner
             foreach ($arr_subitems as $si) {
                 $this->add_tag($si);
@@ -589,22 +609,32 @@ class OneItem {
 
 
         if ($buff_item != '') {
-            if(OI_DEBUG) {oi_log('v2: $buff_item: ' . $buff_item . ' $buff_subitem: ' . $buff_subitem . ', count-si: ' . count($arr_subitems));}
+            if (OI_DEBUG) {
+                oi_log('v2: $buff_item: ' . $buff_item . ' $buff_subitem: ' . $buff_subitem . ', count-si: ' . count($arr_subitems));
+            }
             if (!is_object($level_item)) {
-                if(OI_DEBUG) {oi_log('create root level item: ' . $buff_item);}
+                if (OI_DEBUG) {
+                    oi_log('create root level item: ' . $buff_item);
+                }
                 $level_item = $this->create_item('', '', '', $buff_item);
             } else {
                 if ($hook_path) {
-                    if(OI_DEBUG) {oi_log('add item and change level: ' . $buff_item);}
+                    if (OI_DEBUG) {
+                        oi_log('add item and change level: ' . $buff_item);
+                    }
                     $level_item = $level_item->add_tag($buff_item); // need change level
                 } else {
-                    if(OI_DEBUG) {oi_log('assign item params: ' . $buff_item);}
+                    if (OI_DEBUG) {
+                        oi_log('assign item params: ' . $buff_item);
+                    }
                     $this->_wizard_params($buff_item);
                 }
             }
 
             if (count($arr_subitems) > 0) {
-                if(OI_DEBUG) {oi_log('add childs: ' . count($arr_subitems));}
+                if (OI_DEBUG) {
+                    oi_log('add childs: ' . count($arr_subitems));
+                }
                 foreach ($arr_subitems as $si) {
                     $level_item->add_tag($si);
                 }
@@ -1083,7 +1113,9 @@ class OneItem {
      * @return \OneItem
      */
     public function add_tag($tag, $value = '') {
-        if(OI_DEBUG) {oi_log("add_tag: tag: $tag, value: $value");}
+        if (OI_DEBUG) {
+            oi_log("add_tag: tag: $tag, value: $value");
+        }
         return $this->add_tag_ex('', '', $tag, $value);
     }
 
@@ -1095,7 +1127,9 @@ class OneItem {
      * @return \OneItem
      */
     public function add_tag_ex($id, $classes, $tag, $value = '') {
-        if(OI_DEBUG) {oi_log("add_tag_ex: id: $id, classes: $classes, tag: $tag, value: $value");}
+        if (OI_DEBUG) {
+            oi_log("add_tag_ex: id: $id, classes: $classes, tag: $tag, value: $value");
+        }
         $item = $this->create_item($this, $id, $classes, $tag, $value);
         $this->rebuild_indexes($item);
         $this->items[] = $item;
@@ -1113,35 +1147,32 @@ class OneItem {
         if (func_num_args() > 1) {
             $max_arg = func_num_args();
             for ($i = 1; $i < $max_arg; $i++) {
-                $this->add_ex('', 'auto-tag-' . ($i - 1), $tag, func_get_arg($i));
+                $curr_arg = func_get_arg($i); // new var - fix bug in php < 5.3
+                $this->add_ex('', 'auto-tag-' . ($i - 1), $tag, $curr_arg);
             }
         }
     }
-    
-    
 
-    
     public function add_tag_pairs($tag1, $value1, $tag2 = '', $value2 = '') {
         $max_arg = func_num_args();
         for ($i = 0; $i < $max_arg; $i+=2) {
-            $this->add_tag(func_get_arg($i), func_get_arg($i+1));
+            $arg1 = func_get_arg($i); // new var - fix bug in php < 5.3
+            $arg2 = func_get_arg($i + 1); // new var - fix bug in php < 5.3
+            $this->add_tag($arg1, $arg2);
         }
     }
-
-
 
     public function add_tag_pairs_ex($gr_id, $gr_class, $gr_tag = 'div', $tag1 = '', $value1 = '') {
-       $group = $this->add_tag($gr_tag);
+        $group = $this->add_tag($gr_tag);
 
-       $max_arg = func_num_args();
-       for ($i = 3; $i < $max_arg; $i+=2) {
-            $group->add_tag(func_get_arg($i), func_get_arg($i+1));
+        $max_arg = func_num_args();
+        for ($i = 3; $i < $max_arg; $i+=2) {
+            $arg1 = func_get_arg($i); // new var - fix bug in php < 5.3
+            $arg2 = func_get_arg($i + 1); // new var - fix bug in php < 5.3           
+            $group->add_tag($arg1, $arg2);
         }
     }
 
-
-
-    
     /**
      * Add item as sub-item of another tag
      * 
@@ -1155,7 +1186,7 @@ class OneItem {
         $item = $this->add_tag($tag);
         return $item->add_tag($subtag, $subvalue);
     }
-    
+
     /**
      * Add item as sub-item of another tag with id and classes
      * 
@@ -1173,9 +1204,6 @@ class OneItem {
         return $item->add_tag_ex($sub_id, $sub_class, $subtag, $subvalue);
     }
 
-    
-    
-
     /**
      * add arguments as subitems for tag and subtag
      * 
@@ -1189,7 +1217,8 @@ class OneItem {
             $max_arg = func_num_args();
             $item = $this->add_ex('', oi_auto_class('auto-tag', $this->total_count()), $tag, '');
             for ($i = 2; $i < $max_arg; $i++) {
-                $item->add_ex('', oi_auto_class('auto-sub', $i - 2), $subtag, func_get_arg($i));
+                $curr_arg = func_get_arg($i);
+                $item->add_ex('', oi_auto_class('auto-sub', $i - 2), $subtag, $curr_arg);
             }
         }
     }
@@ -1229,7 +1258,6 @@ class OneItem {
         return $this->add_ex($id, $classes, 'p', $value);
     }
 
-    
     /**
      * Add radio item
      * 
@@ -1525,7 +1553,6 @@ class OneItem {
         return $this->add_ex($id, $classes, 'li', $value);
     }
 
-    
     /**
      * Add HR (Horizontal line) item
      * 
@@ -1547,7 +1574,6 @@ class OneItem {
         return $this->add_ex($id, $classes, 'hr');
     }
 
-    
     /**
      * Add A item (hyperlink)
      * 
@@ -1575,7 +1601,6 @@ class OneItem {
         return $this->add_ex($id, $classes, 'a', $value, $title, $link);
     }
 
-    
     /**
      * Add BR item
      * 
@@ -1597,7 +1622,6 @@ class OneItem {
         return $this->add_ex($id, $classes, 'br');
     }
 
-    
     /**
      * Add script item
      * 
@@ -1609,10 +1633,11 @@ class OneItem {
      */
     public function add_script($script, $add_type = false, $id = '') {
         $item = $this->add_ex($id, '', 'script', $script);
-        if($add_type) { $item->set_param('type', 'text/javascript'); }
+        if ($add_type) {
+            $item->set_param('type', 'text/javascript');
+        }
         return $item;
     }
-
 
     /**
      * Add CSS styles item
@@ -1625,9 +1650,11 @@ class OneItem {
      */
     public function add_style($css, $add_type = false, $id = '') {
         $item = $this->add_ex($id, '', 'style', $css);
-        if($add_type) { $item->set_param('type', 'text/css'); }
+        if ($add_type) {
+            $item->set_param('type', 'text/css');
+        }
         return $item;
-    }    
+    }
 
     /**
      * Add META item (parameters name and content)
@@ -1679,7 +1706,6 @@ class OneItem {
         return $this->params->get_value($name);
     }
 
-    
     /**
      * Set item parent
      * 
@@ -1767,7 +1793,6 @@ class OneItem {
         }
     }
 
-    
     /**
      * Universal function for new item creation
      * 
@@ -1781,7 +1806,9 @@ class OneItem {
      * @return \OneItem
      */
     public function create_item($parent = null, $id = '', $classes = '', $tag = '', $value = '', $title = '', $url = '') {
-        if(OI_DEBUG) {oi_log('create_item: ' . "id: $id, classes: $classes, tag: $tag, value: $value");}
+        if (OI_DEBUG) {
+            oi_log('create_item: ' . "id: $id, classes: $classes, tag: $tag, value: $value");
+        }
         return new OneItem($parent, $id, $classes, $tag, $value, $title, $url);
     }
 
