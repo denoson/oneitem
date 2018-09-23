@@ -1,155 +1,37 @@
 <?php
-
 /**
  * @copyright (c) 2016, Denis Vigovski
  * @package OneItem
- * @version   1.1
+ * @version   3
  * @author    Denis V. <denoson+oneitem@gmail.com>
 
- * @license   http://www.softartstudio.com Free for personal use, for commercial use: $5 per site. If you want to use more 10 sites please contact with me
+ * @license   Free for personal use, for commercial use: $5 per site. If you want to use more 10 sites please contact with me
  */
+
+
 /**
  * Used for class version and check for existing
  */
-define('ONEITEM', '1');
-
-define('INNER_TAG_VALUE', 'itv');
-define('COLLECTION_ITEM_ID', 'coll-item-id');
-
-define('OI_NL', "\n");
-
-define('OI_NAME', 'name');
-define('OI_VALUE', 'value');
-define('OI_TITLE', 'title');
-
-define('OI_DEBUG', false);
-
-/**
- * Get text version of boolean variable
- * 
- * @param bool $need
- * @param string $txt
- * @return string
- */
-function oi_text_by_bool($need, $txt) {
-    if ($need) {
-        return $txt;
-    } else {
-        return '';
-    }
-}
-
-/**
- * Return text before separator
- * 
- * @param string $separator
- * @param string $text
- * @return string
- */
-function oi_str_before($separator, $text) {
-    $arr = explode($separator, $text, 2);
-    return $arr[0];
-}
-
-function oi_str_after() {
-    
-}
-
-function oi_str_between() {
-    
-}
-
-/**
- * Check subtring in string
- * 
- * @param string $txt_src
- * @param string $txt_search
- * @param boolean $skip_case
- * @return boolean
- */
-function oi_substr_exists($txt_src, $txt_search, $skip_case = true) {
-    if ($skip_case) {
-        $txt_src = mb_strtolower($txt_src);
-        $txt_search = mb_strtolower($txt_search);
-    }
-
-    $pos = mb_strpos($txt_src, $txt_search);
-    if ($pos === false) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-/**
- * Generate class name with index
- * 
- * @param string $auto_class
- * @param integer $index
- * @return string
- */
-function oi_auto_class($auto_class, $index) {
-    if ($auto_class == '') {
-        return '';
-    } else {
-        return $auto_class . '-' . $index;
-    }
-}
-
-/**
- * For logging and debugging
- * @param string $mess
- * @param string $tag
- */
-function oi_log($mess, $tag = '') {
-    // debug($mess);
-}
-
-/**
- * Build parameter name="value"
- * 
- * @since 1.0
- * 
- * @param string $name
- * @param string $value
- * @return string
- */
-function oi_build_param($name, $value) {
-    if ($value == '') {
-        return '';
-    } else {
-        return ' ' . $name . '="' . $value . '" ';
-    }
-}
-
-function oi_get_ne_str($str1, $str2) {
-    if ($str1 != '') {
-        return $str1;
-    }
-    if ($str2 != '') {
-        return $str2;
-    }
-    return '';
-}
-
-function oi_check_num($number, $min_value, $max_value) {
-    if ($number < $min_value) {
-        return;
-        $min_value;
-    } else
-    if ($number > $max_value) {
-        return $max_value;
-    } else
-        return $number;
+if (!defined('ONEITEM')) {
+    define('ONEITEM', '3');
 }
 
 /**
  * Simple and powerfull HTML structure generator
  * 
  * @package OneItem
- * @version 1.1
+ * @version 1.3
  */
 class OneItem {
+
+    const VERSION = '3';
+    const OI_DEBUG = false;
+    const OI_NL = "\n";
+    const OI_NAME = 'name';
+    const OI_VALUE = 'value';
+    const OI_TITLE = 'title';
+    const INNER_TAG_VALUE = 'itv';
+    const COLLECTION_ITEM_ID = 'coll-item-id';
 
     /**
      * ID for html element
@@ -185,6 +67,7 @@ class OneItem {
 
     /**
      * Tag for html item (div, h1, span...)
+     * 
      * @see set_tag()
      * @var string
      */
@@ -192,13 +75,15 @@ class OneItem {
 
     /**
      * Is single html tag or not
-     * @example  Single: <img ... />  
+     * 
+     * @example  Single: <img ... />, Not single: <b>Sample</b>
      * @var boolean
      */
     public $single;
 
     /**
-     * OneItems list
+     * List of child items
+     * 
      * @see add_item()
      * @see add_ex()
      * @var array of OneItem
@@ -206,11 +91,11 @@ class OneItem {
     public $items;
 
     /**
-     * Parameters for html item
-     * @see OneParams
-     * @var OneParams
+     * Parameters (attributes) for html item (param1=123 param2="text" ...)
+     * 
+     * @var array()
      */
-    public $params;
+    public $param_items = array();
 
     /**
      * Parent node for item
@@ -245,20 +130,22 @@ class OneItem {
     public $raw = '';
 
     /**
-     * OneItem constructor
+     * \OneItem class constructor, by default use div tag and empty classes
      * 
-     * @param OneItem $parent Parent of element
-     * @param string $id ID for element
-     * @param string $classes List of classes for element
-     * @param string $tag HTML tag for element
-     * @param string $value Default value for element 
-     * @param string $title Element title (if used)
-     * @param string $url Element link (if exists)
+     * @param \OneItem $parent Parent item for created item
+     * @param string $id ID for new item
+     * @param string $classes CSS Classes list
+     * @param string $tag Name of tag: div, span, input
+     * @param string $value Universal value for item
+     * @param string $title Title for item
+     * @param string $url Url value for item
      */
     function __construct($parent = null, $id = '', $classes = '', $tag = '', $value = '', $title = '', $url = '') {
 
-        oi_log('__construct: ' . "id: $id, class: $classes, tag: $tag, value: $value");
-        $this->params = new OneParams();
+        if (self::OI_DEBUG) {
+            $this->oi_log('__construct: ' . "id: $id, class: $classes, tag: $tag, value: $value");
+        }
+        $this->param_clear(); // init and clear parameters
 
         if (($parent != null) && ($parent != '')) {
             $this->set_parent($parent);
@@ -285,8 +172,8 @@ class OneItem {
         if ($tag_name == '') {
             return false;
         }
-        if (OI_DEBUG) {
-            oi_log('init_tag_wizard 1: ' . $this->get_debug_info());
+        if (self::OI_DEBUG) {
+            $this->oi_log('init_tag_wizard 1: ' . $this->get_debug_info());
         }
         $arr_search = array('/', '{', '[', ',');
         $clear_tag = str_replace($arr_search, ' ', $tag_name);
@@ -294,24 +181,24 @@ class OneItem {
         $this->tag = $arr_tags[0];
 
 
-        if (oi_substr_exists($tag_name, 'input')) {
+        if ($this->oi_substr_exists($tag_name, 'input')) {
             $this->_wizard_forms($tag_name);
         } else
-        if (oi_substr_exists($tag_name, 'select')) {
+        if ($this->oi_substr_exists($tag_name, 'select')) {
             $this->_wizard_forms($tag_name);
         } else
-        if (oi_substr_exists($tag_name, 'option')) {
+        if ($this->oi_substr_exists($tag_name, 'option')) {
             $this->_wizard_forms($tag_name);
         } else
-        if (oi_substr_exists($tag_name, 'textarea')) {
+        if ($this->oi_substr_exists($tag_name, 'textarea')) {
             $this->_wizard_forms($tag_name);
         } else
 
-        if ((oi_substr_exists($tag_name, '{')) || (oi_substr_exists($tag_name, '/'))) {
+        if (($this->oi_substr_exists($tag_name, '{')) || ($this->oi_substr_exists($tag_name, '/'))) {
             $this->_wizard_struct($tag_name);
         } else
 
-        if (oi_substr_exists($tag_name, '[')) {
+        if ($this->oi_substr_exists($tag_name, '[')) {
             $this->_wizard_params($tag_name);
         }
 
@@ -320,18 +207,19 @@ class OneItem {
         }
 
         $this->_wizard_params_sync();
-        if (OI_DEBUG) {
-            oi_log('init_tag_wizard 2: ' . $this->get_debug_info());
+        if (self::OI_DEBUG) {
+            $this->oi_log('init_tag_wizard 2: ' . $this->get_debug_info());
         }
     }
 
     /**
+     * Tag name parsing and autofill some parameters
      * 
      * @param string $tag_name
      */
     private function _wizard_forms($tag_name) {
-        if (OI_DEBUG) {
-            oi_log('_wizard_forms:' . $tag_name);
+        if (self::OI_DEBUG) {
+            $this->oi_log('_wizard_forms:' . $tag_name);
         }
         $tag_name_src = $tag_name;
 
@@ -342,7 +230,7 @@ class OneItem {
             $separator = '{';
         }
 
-        $tag_name = oi_str_before($separator, $tag_name);
+        $tag_name = $this->oi_str_before($separator, $tag_name);
         $tag_name = mb_strtolower($tag_name);
 
         $arr_tags = explode(' ', $tag_name);
@@ -350,18 +238,18 @@ class OneItem {
             $this->tag = $arr_tags[0];
         }
 
-        if (oi_substr_exists($tag_name_src, '[')) {
+        if ($this->oi_substr_exists($tag_name_src, '[')) {
             $this->_wizard_params($tag_name);
         }
 
         $need_name = false;
         $need_value = false;
 
-        if (oi_substr_exists($tag_name, 'selected')) {
-            $this->params->add('selected', 'selected');
+        if ($this->oi_substr_exists($tag_name, 'selected')) {
+            $this->param_add('selected', 'selected');
         }
-        if (oi_substr_exists($tag_name, 'checked')) {
-            $this->params->add('checked', 'checked');
+        if ($this->oi_substr_exists($tag_name, 'checked')) {
+            $this->param_add('checked', 'checked');
         }
 
         if ($arr_tags[0] == 'input') {
@@ -375,7 +263,7 @@ class OneItem {
                 $param_type = $arr_tags[1];
                 $pos = strpos($param_type, '[');
                 if ($pos === false) {
-                    $this->params->add('type', $arr_tags[1]);
+                    $this->param_add('type', $arr_tags[1]);
                 }// For: hidden, checkbox, radio, submit, button, text   
             }
         } else
@@ -390,27 +278,27 @@ class OneItem {
         } else
 
         if ($arr_tags[0] === 'option') {
-            $this->params->add('value', $this->value);
-            $this->value = $this->get_param('title');
-            $this->params->remove('title');
+            $this->param_add(self::OI_VALUE, $this->value);
+            $this->value = $this->get_param(self::OI_TITLE);
+            $this->param_remove(self::OI_TITLE);
         }
 
 
         if ($need_name) {
-            $this->params->add('name', oi_get_ne_str($this->id, $this->params->get_value('id')));
+            $this->param_add(self::OI_NAME, $this->oi_get_ne_str($this->id, $this->param_get_value('id')));
         }
         if ($need_value) {
-            $this->params->add('value', $this->value);
+            $this->param_add(self::OI_VALUE, $this->value);
         }
     }
 
     /**
-     * 
+     * Extract tag parameters from text line: [param1=qwe,param2=asd,param3=zxc]
      * @param string $tag_name
      */
     private function _wizard_params($tag_name) {
-        if (OI_DEBUG) {
-            oi_log('_wizard_params:' . $tag_name);
+        if (self::OI_DEBUG) {
+            $this->oi_log('_wizard_params:' . $tag_name);
         }
         // extract all possible parameters [param1=qwe,param2=asd,param3=zxc]
         if ($tag_name == '') {
@@ -424,7 +312,7 @@ class OneItem {
         $length = $end - $start;
 
         if (($start >= 0) && ($start < $end)) {
-            // exists some parameters	 
+            // some parameters found
             $res_params = mb_substr($tag_name, $start + 1, $length - 1);
             $arr_params = explode(',', $res_params);
 
@@ -433,38 +321,32 @@ class OneItem {
                 if (strpos($arr_curr_param[1], ']') > 0) {
                     $arr_curr_param[1] = str_replace(']', '', $arr_curr_param[1]);
                 } // fix for unicode symbols
-                $this->params->add($arr_curr_param[0], $arr_curr_param[1]);
-                //oi_log('add param: [' . $arr_curr_param[0] . '] = ' . $arr_curr_param[1]);
+                $this->param_add($arr_curr_param[0], $arr_curr_param[1]);
             }
         }
-        //oi_log('_wizard_params:' . $this->params->as_list());  
     }
 
     /**
      * Sync common parameters in properties and parameters
      */
     private function _wizard_params_sync() {
-        if (OI_DEBUG) {
-            oi_log('_wizard_params_sync');
+        if (self::OI_DEBUG) {
+            $this->oi_log('_wizard_params_sync');
         }
-        if ($this->params->param_exists(INNER_TAG_VALUE)) {
-            $this->set_value($this->params->get_value(INNER_TAG_VALUE));
-            //oi_log('sync itv: ' . $this->params->get_value(INNER_TAG_VALUE));
-            $this->params->remove(INNER_TAG_VALUE);
-        }
-
-        if ($this->params->param_exists('class')) {
-            $this->class_apply($this->params->get_value('class'));
-            //oi_log('sync class: ' . $this->params->get_value('class'));
+        if ($this->param_exists(self::INNER_TAG_VALUE)) {
+            $this->set_value($this->param_get_value(self::INNER_TAG_VALUE));
+            $this->param_remove(self::INNER_TAG_VALUE);
         }
 
-        if ($this->params->param_exists('id')) {
+        if ($this->param_exists('class')) {
+            $this->class_apply($this->param_get_value('class'));
+        }
+
+        if ($this->param_exists('id')) {
             if ($this->id == '') {
-                $this->id = $this->params->get_value('id');
+                $this->id = $this->param_get_value('id');
             }
-            //oi_log('sync id: ' . $this->params->get_value('id'));
         }
-
 
         if ($this->tag == 'img') {
             $this->init_image($this->value);
@@ -473,31 +355,32 @@ class OneItem {
             $need_name = true;
         } else
         if ($this->tag == 'form') {
-            $this->params->add('method', 'post');
+            $this->param_add('method', 'post');
         }
-
-
 
         if ($this->tag == 'option') {
             if ($this->value == '') {
-                $this->value = $this->params->get_value('title');
-                $this->params->remove('title');
+                $this->value = $this->param_get_value(self::OI_TITLE);
+                $this->param_remove(self::OI_TITLE);
             }
         }
     }
 
     /**
+     * Parse additional structure with {} format
      * 
      * @param string $tag_name
      */
     private function _wizard_struct($tag_name) {
-        if (OI_DEBUG) {
-            oi_log('_wizard_struct: ' . $tag_name);
+        if (self::OI_DEBUG) {
+            $this->oi_log('_wizard_struct: ' . $tag_name);
         }
         $this->_struct_parser($this, $tag_name);
     }
 
+    
     /**
+     * Parse tag from text line in format {div [class]}
      * 
      * @param OneItem $level_item
      * @param string $txt
@@ -529,8 +412,8 @@ class OneItem {
             if ($symbol == '}') {
                 if ($level > 0) {
                     if ($level == 1) {
-                        if (OI_DEBUG) {
-                            oi_log('apply extracted subitem: ' . $buff_subitem);
+                        if (self::OI_DEBUG) {
+                            $this->oi_log('apply extracted subitem: ' . $buff_subitem);
                         }
                         $level = 0;
                         $arr_subitems[] = $buff_subitem;
@@ -553,23 +436,23 @@ class OneItem {
 
 
             if (($symbol == '/') && ($level <= 0) && (!$hook_params)) {
-                if (OI_DEBUG) {
-                    oi_log('s-delimeter /' . "item: $buff_item, subitem: $buff_subitem");
+                if (self::OI_DEBUG) {
+                    $this->oi_log('s-delimeter /' . "item: $buff_item, subitem: $buff_subitem");
                 }
                 if (!is_object($level_item)) {
-                    if (OI_DEBUG) {
-                        oi_log('create root item: ' . $buff_item);
+                    if (self::OI_DEBUG) {
+                        $this->oi_log('create root item: ' . $buff_item);
                     }
                     $level_item = $this->create_item('', '', '', $buff_item);
                 } else {
                     if ($level_slash <= 0) {
-                        if (OI_DEBUG) {
-                            oi_log('assign params: ' . $buff_item);
+                        if (self::OI_DEBUG) {
+                            $this->oi_log('assign params: ' . $buff_item);
                         }
                         $this->_wizard_params($buff_item);
                     } else {
-                        if (OI_DEBUG) {
-                            oi_log('add subitem (change level): ' . $buff_item);
+                        if (self::OI_DEBUG) {
+                            $this->oi_log('add subitem (change level): ' . $buff_item);
                         }
                         $level_item = $level_item->add_ex('', '', $buff_item);
                     }
@@ -598,8 +481,8 @@ class OneItem {
 
         $buff_item = trim($buff_item);
         if (($buff_item == '') && (count($arr_subitems) > 0)) {
-            if (OI_DEBUG) {
-                oi_log('v1: ' . $buff_item . ' si: ' . $buff_subitem);
+            if (self::OI_DEBUG) {
+                $this->oi_log('v1: ' . $buff_item . ' si: ' . $buff_subitem);
             }
             // if only subitems without owner
             foreach ($arr_subitems as $si) {
@@ -609,31 +492,31 @@ class OneItem {
 
 
         if ($buff_item != '') {
-            if (OI_DEBUG) {
-                oi_log('v2: $buff_item: ' . $buff_item . ' $buff_subitem: ' . $buff_subitem . ', count-si: ' . count($arr_subitems));
+            if (self::OI_DEBUG) {
+                $this->oi_log('v2: $buff_item: ' . $buff_item . ' $buff_subitem: ' . $buff_subitem . ', count-si: ' . count($arr_subitems));
             }
             if (!is_object($level_item)) {
-                if (OI_DEBUG) {
-                    oi_log('create root level item: ' . $buff_item);
+                if (self::OI_DEBUG) {
+                    $this->oi_log('create root level item: ' . $buff_item);
                 }
                 $level_item = $this->create_item('', '', '', $buff_item);
             } else {
                 if ($hook_path) {
-                    if (OI_DEBUG) {
-                        oi_log('add item and change level: ' . $buff_item);
+                    if (self::OI_DEBUG) {
+                        $this->oi_log('add item and change level: ' . $buff_item);
                     }
                     $level_item = $level_item->add_tag($buff_item); // need change level
                 } else {
-                    if (OI_DEBUG) {
-                        oi_log('assign item params: ' . $buff_item);
+                    if (self::OI_DEBUG) {
+                        $this->oi_log('assign item params: ' . $buff_item);
                     }
                     $this->_wizard_params($buff_item);
                 }
             }
 
             if (count($arr_subitems) > 0) {
-                if (OI_DEBUG) {
-                    oi_log('add childs: ' . count($arr_subitems));
+                if (self::OI_DEBUG) {
+                    $this->oi_log('add childs: ' . count($arr_subitems));
                 }
                 foreach ($arr_subitems as $si) {
                     $level_item->add_tag($si);
@@ -660,7 +543,7 @@ class OneItem {
         $this->hide_empty = $item->hide_empty;
         $this->visible = $item->visible;
 
-        $this->params->assign($item->params); // need assign params
+        $this->param_assign($item->get_params()); // need assign params
     }
 
     /**
@@ -685,17 +568,17 @@ class OneItem {
         $lvl_offset = $this->get_level_offset();
 
         if ($curr_tag == 'a') {
-            $params = ' href="' . $this->url . '" ';
+            $params = ' href="' . htmlentities($this->url) . '" ';
         }
 
         if ($this->total_count() > 0) {
-            $nl = OI_NL;
+            $nl = self::OI_NL;
         } else {
             $nl = '';
         }
 
-        return $lvl_offset . '<' . $curr_tag . oi_build_param('id', $this->id) .
-                oi_build_param('class', $this->classes) . $this->params->as_list() . $params . '>' . $nl;
+        return $lvl_offset . '<' . $curr_tag . $this->oi_build_param('id', $this->id) .
+                $this->oi_build_param('class', $this->classes) . $this->param_as_list() . $params . '>' . $nl;
     }
 
     /**
@@ -722,7 +605,7 @@ class OneItem {
         }
 
 
-        return $lvl_offset . '</' . $curr_tag . '>' . OI_NL;
+        return $lvl_offset . '</' . $curr_tag . '>' . self::OI_NL;
     }
 
     /**
@@ -777,14 +660,14 @@ class OneItem {
         $this->check_default_tag();
         $html = '';
         if ($this->raw != '') {
-            $html = $this->raw . OI_NL;
+            $html = $this->raw . self::OI_NL;
         }
 
 
         if ($this->single) {
             $lvl_offset = $this->get_level_offset();
-            $html .= $lvl_offset . '<' . $this->tag . oi_build_param('id', $this->id) .
-                    oi_build_param('class', $this->classes) . $this->params->as_list() . '/>' . OI_NL;
+            $html .= $lvl_offset . '<' . $this->tag . $this->oi_build_param('id', $this->id) .
+                    $this->oi_build_param('class', $this->classes) . $this->param_as_list() . '/>' . self::OI_NL;
         } else {
 
             if (($this->url != '') && !$this->compare_tag('a')) {
@@ -838,11 +721,11 @@ class OneItem {
      */
     public function as_subtag($tag, $subtag, $auto_class = '') {
         $list_item = $this->create_item('', '', '', $tag);
-        $list_item->params->assign($this->params);
+        $list_item->param_assign($this->get_params());
         $i = 0;
 
         foreach ($this->items as $item) {
-            $subitem = $list_item->add_ex('', oi_auto_class($auto_class, $i), $subtag);
+            $subitem = $list_item->add_ex('', $this->oi_auto_class($auto_class, $i), $subtag);
             $subitem->add_item($item);
             $i++;
         }
@@ -861,16 +744,16 @@ class OneItem {
      */
     public function as_grid_cols($tag, $tag_row, $tag_column, $cols, $class_row = '', $class_col = '') {
         $grid = $this->create_item('', '', '', $tag);
-        $grid->params->assign($this->params);
+        $grid->param_assign($this->get_params());
         $ir = 0;
         $ic = 0;
 
         foreach ($this->items as $item) {
             if ($ic == 0) {
-                $row = $grid->add_ex('', oi_auto_class($class_row, $ir), $tag_row);
+                $row = $grid->add_ex('', $this->oi_auto_class($class_row, $ir), $tag_row);
                 $ir++;
             }
-            $row->add_item($item->as_tag($tag_column, '', oi_auto_class($class_col, $ic)));
+            $row->add_item($item->as_tag($tag_column, '', $this->oi_auto_class($class_col, $ic)));
             if ($ic >= ($cols - 1)) {
                 $ic = 0;
             } else {
@@ -975,7 +858,6 @@ class OneItem {
      * @param string $classes
      */
     public function class_exists($classes) {
-        //return oi_substr_exists($this->classes, $classes, false);
         $txt_src = mb_strtolower($this->classes);
         $txt_search = mb_strtolower($classes);
 
@@ -1017,7 +899,7 @@ class OneItem {
      */
     public function init_image($img_file) {
         $this->set_tag('img');
-        $this->params->add('src', $img_file);
+        $this->param_add('src', $img_file);
         $this->single = true;
     }
 
@@ -1113,8 +995,8 @@ class OneItem {
      * @return \OneItem
      */
     public function add_tag($tag, $value = '') {
-        if (OI_DEBUG) {
-            oi_log("add_tag: tag: $tag, value: $value");
+        if (self::OI_DEBUG) {
+            $this->oi_log("add_tag: tag: $tag, value: $value");
         }
         return $this->add_tag_ex('', '', $tag, $value);
     }
@@ -1127,8 +1009,8 @@ class OneItem {
      * @return \OneItem
      */
     public function add_tag_ex($id, $classes, $tag, $value = '') {
-        if (OI_DEBUG) {
-            oi_log("add_tag_ex: id: $id, classes: $classes, tag: $tag, value: $value");
+        if (self::OI_DEBUG) {
+            $this->oi_log("add_tag_ex: id: $id, classes: $classes, tag: $tag, value: $value");
         }
         $item = $this->create_item($this, $id, $classes, $tag, $value);
         $this->rebuild_indexes($item);
@@ -1155,7 +1037,7 @@ class OneItem {
 
     public function add_tag_pairs($tag1, $value1, $tag2 = '', $value2 = '') {
         $max_arg = func_num_args();
-        for ($i = 0; $i < $max_arg; $i+=2) {
+        for ($i = 0; $i < $max_arg; $i += 2) {
             $arg1 = func_get_arg($i); // new var - fix bug in php < 5.3
             $arg2 = func_get_arg($i + 1); // new var - fix bug in php < 5.3
             $this->add_tag($arg1, $arg2);
@@ -1166,7 +1048,7 @@ class OneItem {
         $group = $this->add_tag($gr_tag);
 
         $max_arg = func_num_args();
-        for ($i = 3; $i < $max_arg; $i+=2) {
+        for ($i = 3; $i < $max_arg; $i += 2) {
             $arg1 = func_get_arg($i); // new var - fix bug in php < 5.3
             $arg2 = func_get_arg($i + 1); // new var - fix bug in php < 5.3           
             $group->add_tag($arg1, $arg2);
@@ -1215,10 +1097,10 @@ class OneItem {
     public function add_subtags($tag, $subtag, $arg1 = '', $arg2 = '') {
         if (func_num_args() > 2) {
             $max_arg = func_num_args();
-            $item = $this->add_ex('', oi_auto_class('auto-tag', $this->total_count()), $tag, '');
+            $item = $this->add_ex('', $this->oi_auto_class('auto-tag', $this->total_count()), $tag, '');
             for ($i = 2; $i < $max_arg; $i++) {
                 $curr_arg = func_get_arg($i);
-                $item->add_ex('', oi_auto_class('auto-sub', $i - 2), $subtag, $curr_arg);
+                $item->add_ex('', $this->oi_auto_class('auto-sub', $i - 2), $subtag, $curr_arg);
             }
         }
     }
@@ -1280,8 +1162,8 @@ class OneItem {
             $lbl = $this->add_ex('lbl-' . $id, $classes, 'label', $title);
         }
 
-        $radio->set_param('name', $group);
-        $radio->set_param('value', $value);
+        $radio->set_param(self::OI_NAME, $group);
+        $radio->set_param(self::OI_VALUE, $value);
         if ($checked) {
             $radio->set_param('checked', 'checked');
         }
@@ -1347,7 +1229,7 @@ class OneItem {
         } else {
             $item = $this->add_ex('', '', 'option');
             $item->value = $title;
-            $item->set_param('value', $value);
+            $item->set_param(self::OI_VALUE, $value);
         }
 
         if ($selected) {
@@ -1395,7 +1277,7 @@ class OneItem {
      * @return OneItem
      */
     public function add_h_ex($id, $classes, $value, $h_number = 2) {
-        $h_number = oi_check_num(intval($h_number), 1, 10);
+        $h_number = $this->oi_check_num(intval($h_number), 1, 10);
         return $this->add_ex($id, $classes, 'h' . $h_number, $value);
     }
 
@@ -1665,7 +1547,7 @@ class OneItem {
      * @return OneItem
      */
     public function add_meta($mname, $mcontent) {
-        return $this->add_item_meta_ex('name', $mname, 'content', $mcontent);
+        return $this->add_item_meta_ex(self::OI_NAME, $mname, 'content', $mcontent);
     }
 
     /**
@@ -1681,8 +1563,8 @@ class OneItem {
     public function add_meta_ex($name1, $value1, $name2 = '', $value2 = '') {
         $meta = $this->create_item($this, '', '', 'meta');
         $meta->single = true;
-        $meta->params->add($name1, $value1);
-        $meta->params->add($name2, $value2);
+        $meta->set_param($name1, $value1);
+        $meta->set_param($name2, $value2);
         $this->rebuild_indexes($meta);
         return $this->add_item($meta);
     }
@@ -1694,7 +1576,7 @@ class OneItem {
      * @param string $value
      */
     public function set_param($name, $value) {
-        $this->params->add($name, $value);
+        $this->param_add($name, $value);
     }
 
     /**
@@ -1703,7 +1585,16 @@ class OneItem {
      * @param string $name
      */
     public function get_param($name) {
-        return $this->params->get_value($name);
+        return $this->param_get_value($name);
+    }
+
+    /**
+     * Get all parameters as array
+     * 
+     * @return Array
+     */
+    public function get_params() {
+        return $this->param_items;
     }
 
     /**
@@ -1760,7 +1651,16 @@ class OneItem {
      * @param string $value
      */
     public function set_onclick($value) {
-        $this->params->add('onclick', $value);
+        $this->set_param('onclick', $value);
+    }
+
+    /**
+     * Setup onchange function as parameter
+     * 
+     * @param string $value
+     */
+    public function set_onchange($value) {
+        $this->set_param('onchange', $value);
     }
 
     /**
@@ -1770,7 +1670,7 @@ class OneItem {
      * @param string $title
      */
     public function set_title($title) {
-        $this->params->add('title', $title);
+        $this->set_param(self::OI_TITLE, $title);
     }
 
     /**
@@ -1806,8 +1706,8 @@ class OneItem {
      * @return \OneItem
      */
     public function create_item($parent = null, $id = '', $classes = '', $tag = '', $value = '', $title = '', $url = '') {
-        if (OI_DEBUG) {
-            oi_log('create_item: ' . "id: $id, classes: $classes, tag: $tag, value: $value");
+        if (self::OI_DEBUG) {
+            $this->oi_log('create_item: ' . "id: $id, classes: $classes, tag: $tag, value: $value");
         }
         return new OneItem($parent, $id, $classes, $tag, $value, $title, $url);
     }
@@ -1815,7 +1715,7 @@ class OneItem {
     // OK
     public function by_tag($tag, $collection = null, $level = null) {
         if (!is_object($collection)) {
-            $collection = $this->create_item('', COLLECTION_ITEM_ID, '');
+            $collection = $this->create_item('', self::COLLECTION_ITEM_ID, '');
         } // result item
         if (!is_object($level)) {
             $level = $this;
@@ -1839,7 +1739,7 @@ class OneItem {
     // ok
     public function by_class($classes, $collection = null, $level = null) {
         if (!is_object($collection)) {
-            $collection = $this->create_item('', COLLECTION_ITEM_ID, '');
+            $collection = $this->create_item('', self::COLLECTION_ITEM_ID, '');
         } // result item
         if (!is_object($level)) {
             $level = $this;
@@ -1863,7 +1763,7 @@ class OneItem {
     // ok
     public function by_id($id, $collection = null, $level = null) {
         if (!is_object($collection)) {
-            $collection = $this->create_item('', COLLECTION_ITEM_ID, '');
+            $collection = $this->create_item('', self::COLLECTION_ITEM_ID, '');
         } // result item
         if (!is_object($level)) {
             $level = $this;
@@ -1887,7 +1787,7 @@ class OneItem {
     // ok
     public function by_param($param_name, $param_value, $collection = null, $level = null) {
         if (!is_object($collection)) {
-            $collection = $this->create_item('', COLLECTION_ITEM_ID, '');
+            $collection = $this->create_item('', self::COLLECTION_ITEM_ID, '');
         } // result item
         if (!is_object($level)) {
             $level = $this;
@@ -1897,8 +1797,8 @@ class OneItem {
             return $collection;
         }
         foreach ($level->items as $curr_item) {
-            if ($curr_item->params->param_exists($param_name)) {
-                if ($curr_item->params->get_value($param_name) == $param_value) {
+            if ($curr_item->param_exists($param_name)) {
+                if ($curr_item->get_param($param_name) == $param_value) {
                     $collection->add_item($curr_item);
                 }
             } else {
@@ -1914,7 +1814,7 @@ class OneItem {
     public function select($mask) {
         $collection = null;
         if ($mask == '') {
-            return $this->create_item('', COLLECTION_ITEM_ID, '');
+            return $this->create_item('', self::COLLECTION_ITEM_ID, '');
         }
         $arr_mask = str_split($mask);
 
@@ -1954,10 +1854,10 @@ class OneItem {
      */
     public function get_debug_info($id = true, $classes = true, $value = false, $url = false) {
         return $this->tag .
-                oi_text_by_bool($id, ' [id:' . $this->id . ']') .
-                oi_text_by_bool($classes, ' [classes:' . $this->classes . ']') .
-                oi_text_by_bool($value, ' [value:' . $this->value . ']') .
-                oi_text_by_bool($url, ' [url:' . $this->url . ']');
+                $this->oi_text_by_bool($id, ' [id:' . $this->id . ']') .
+                $this->oi_text_by_bool($classes, ' [classes:' . $this->classes . ']') .
+                $this->oi_text_by_bool($value, ' [value:' . $this->value . ']') .
+                $this->oi_text_by_bool($url, ' [url:' . $this->url . ']');
     }
 
     /**
@@ -1978,25 +1878,172 @@ class OneItem {
         }
     }
 
-}
-
-/**
- * Internal class for managing of tag attributes and parameters
- * 
- * @package OneItem
- * @version 1.0
- */
-class OneParams {
-
-    public $items = array();
+    // Tools Functions from root
 
     /**
-     * Contructor for Parameters class
+     * Get text version of boolean variable
+     * 
+     * @param bool $need
+     * @param string $txt
+     * @return string
      */
-    function __construct() {
-        
+    public function oi_text_by_bool($need, $txt) {
+        if ($need) {
+            return $txt;
+        } else {
+            return '';
+        }
     }
 
+    /**
+     * Return text before separator
+     * 
+     * @param string $separator
+     * @param string $text
+     * @return string
+     */
+    public function oi_str_before($separator, $text) {
+        $arr = explode($separator, $text, 2);
+        return $arr[0];
+    }
+
+/**
+ * Get text after text separator
+ * 
+ * @param string $separator
+ * @param string $text
+ * @return string
+ */
+    public function oi_str_after($separator, $text) {
+        $arr = explode($separator, $text, 2);
+        return $arr[1]; 
+    }
+
+/**
+ * Get text between two text separators
+ * 
+ * @param string $text
+ * @param string $txt_start
+ * @param string $txt_end
+ * @return string
+ */
+    public function oi_str_between($text, $txt_start, $txt_end) {
+       $text = ' ' . $text; 
+       $istart = strpos($text, $txt_start);
+       $iend = strpos($text, $txt_end);
+       
+       if(($istart > 0) && ($iend > 0)) {
+           if($istart < $iend) {
+               $istart += strlen($txt_start);
+               return substr($text, $istart, $iend - $istart);
+           }
+       }
+       return '';
+    }
+
+    /**
+     * Check subtring in stringwith some options
+     * 
+     * @param string $txt_src
+     * @param string $txt_search
+     * @param boolean $skip_case
+     * @return boolean
+     */
+    public function oi_substr_exists($txt_src, $txt_search, $skip_case = true) {
+        if ($skip_case) {
+            $txt_src = mb_strtolower($txt_src);
+            $txt_search = mb_strtolower($txt_search);
+        }
+
+        $pos = mb_strpos($txt_src, $txt_search);
+        if ($pos === false) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Generate class name with index
+     * 
+     * @param string $auto_class
+     * @param integer $index
+     * @return string
+     */
+    public function oi_auto_class($auto_class, $index) {
+        if ($auto_class == '') {
+            return '';
+        } else {
+            return $auto_class . '-' . $index;
+        }
+    }
+
+    /**
+     * For logging and debugging
+     * Create function debug_oneitem($mess) in any other file
+     * 
+     * @param string $mess
+     * @param string $tag
+     */
+    public function oi_log($mess, $tag = '') {
+        debug_oneitem($mess);
+    }
+
+    /**
+     * Build parameter name="value"
+     * 
+     * @since 1.0
+     * 
+     * @param string $name
+     * @param string $value
+     * @return string
+     */
+    public function oi_build_param($name, $value) {
+        if ($value == '') {
+            return '';
+        } else {
+            return ' ' . $name . '="' . htmlentities($value) . '" ';
+        }
+    }
+
+    /**
+     * Return Not Empty text from two string vars
+     * 
+     * @param type $str1
+     * @param type $str2
+     * @return string
+     */
+    public function oi_get_ne_str($str1, $str2) {
+        if ($str1 != '') {
+            return $str1;
+        }
+        if ($str2 != '') {
+            return $str2;
+        }
+        return '';
+    }
+
+    /**
+     * Check and fix min and max value for number
+     * 
+     * @param type $number
+     * @param type $min_value
+     * @param type $max_value
+     * @return type
+     */
+    public function oi_check_num($number, $min_value, $max_value) {
+        if ($number < $min_value) {
+            return;
+            $min_value;
+        } else
+        if ($number > $max_value) {
+            return $max_value;
+        } else
+            return $number;
+    }
+
+    
+    
     /**
      * Add new parameter
      * @since 1.0
@@ -2004,18 +2051,19 @@ class OneParams {
      * @param string $name
      * @param string $value
      */
-    public function add($name, $value, $skip_if_empty = true) {
+    public function param_add($name, $value, $skip_if_empty = true) {
         $value = trim($value);
         $name = trim($name);
+        
         if ($name == '') {
             return false;
         }
-        $param_index = $this->get_index_by_name($name);
+        $param_index = $this->param_get_index($name);
 
         if ($value != '') {
             // add: param = value
             if ($param_index <> -1) {
-                $this->items[$param_index]['value'] = $value;
+                $this->param_items[$param_index][self::OI_VALUE] = $value;
             } else {
                 $this->_add_param($name, $value);
             }
@@ -2023,9 +2071,8 @@ class OneParams {
             // add empty parameter
             if (!$skip_if_empty) {
                 if ($param_index <> -1) {
-                    $this->items[$param_index]['value'] = $value;
+                    $this->param_items[$param_index][self::OI_VALUE] = $value;
                 } else {
-
                     $this->_add_param($name, '');
                 }
             }
@@ -2034,19 +2081,31 @@ class OneParams {
 
     private function _add_param($pname, $pvalue) {
         $item = array();
-        $item['name'] = $pname;
-        $item['value'] = $pvalue;
-        $this->items[] = $item;
+        $item[self::OI_NAME] = $pname;
+        $item[self::OI_VALUE] = $pvalue;
+        $this->param_items[] = $item;
     }
 
+    /**
+     * Check by name: is parameter exists or not
+     * 
+     * @param type $name
+     * @return type
+     */
     public function param_exists($name) {
-        return $this->get_index_by_name($name) <> -1;
+        return $this->param_get_index($name) <> -1;
     }
 
-    public function get_index_by_name($name) {
+    /**
+     * Get parameter index by name
+     * 
+     * @param type $name
+     * @return int
+     */
+    public function param_get_index($name) {
         $res = -1;
-        foreach ($this->items as $key => $item) {
-            if ($item['name'] == $name) {
+        foreach ($this->param_items as $key => $item) {
+            if ($item[self::OI_NAME] == $name) {
                 return $key;
             }
         }
@@ -2054,17 +2113,16 @@ class OneParams {
     }
 
     /**
-     * Get parameters as line
+     * Get parameters as text line
      * @since 1.0
      * 
      * @return string
      */
-    public function as_list() {
-        if ($this->total_count() > 0) {
+    public function param_as_list() {
+        if ($this->param_total_count() > 0) {
             $html = ' ';
-            foreach ($this->items as $key => $value) {
-                $html .= $this->as_param($key) . ' ';
-                //echo ' [ ' . $this->items[$key]['value'] . '" ]';
+            foreach ($this->param_items as $key => $value) {
+                $html .= $this->param_by_index($key) . ' ';
             }
             return $html;
         } else {
@@ -2072,13 +2130,33 @@ class OneParams {
         }
     }
 
-    public function as_param($index) {
-        $param = $this->items[$index];
-        if ($param['value'] == '') {
-            return $param['name'];
+    /**
+     * Get parameter value by index
+     * 
+     * @param type $index
+     * @return string
+     */
+    public function param_by_index($index) {
+        if ($this->param_valid_index($index)) {
+            $param = $this->param_items[$index];
+            if ($param[self::OI_VALUE] == '') {
+                return $param[self::OI_NAME];
+            } else {
+                return $param[self::OI_NAME] . '="' . htmlspecialchars($param[self::OI_VALUE]) . '"';
+            }
         } else {
-            return $param['name'] . '="' . $param['value'] . '"';
+            return '';
         }
+    }
+
+    /**
+     * Check for valid parameters index
+     * 
+     * @param type $index
+     * @return boolean
+     */
+    public function param_valid_index($index) {
+        return $index < $this->param_total_count();
     }
 
     /**
@@ -2088,21 +2166,24 @@ class OneParams {
      * @param string $param_name
      * @return string
      */
-    public function get_value($param_name) {
+    public function param_get_value($param_name) {
         $res = '';
-        foreach ($this->items as $item) {
-
-            if ($param_name == $item['name']) {
-                return $item['value'];
+        foreach ($this->param_items as $item) {
+            if ($param_name == $item[self::OI_NAME]) {
+                return $item[self::OI_VALUE];
             }
         }
         return $res;
     }
 
-    public function remove($name) {
-        $ind = $this->get_index_by_name($name);
+    /**
+     * Remove parameter (by name) from list
+     * @param type $name
+     */
+    public function param_remove($name) {
+        $ind = $this->param_get_index($name);
         if ($ind >= 0) {
-            unset($this->items[$ind]);
+            unset($this->param_items[$ind]);
         }
     }
 
@@ -2110,15 +2191,21 @@ class OneParams {
      * Clear all parameters
      * @since 1.0
      */
-    public function clear() {
-        $this->items = '';
-        $this->items = array();
+    public function param_clear() {
+        $this->param_items = '';
+        $this->param_items = array();
     }
 
-    public function assign($params) {
-        $this->clear();
-        foreach ($params->items as $item) {
-            $this->add($item['name'], $item['value']);
+    /**
+     * Assign parameters from other source
+     * @param type $params
+     */
+    public function param_assign($params) {
+        $this->param_clear();
+        if(!empty($params)) {
+        foreach ($params as $item) {
+            $this->param_add($item[self::OI_NAME], $item[self::OI_VALUE]);
+          }
         }
     }
 
@@ -2128,8 +2215,8 @@ class OneParams {
      * 
      * @return integer
      */
-    public function total_count() {
-        return count($this->items);
+    public function param_total_count() {
+        return count($this->param_items);
     }
 
-}
+}  // end class OneItem
