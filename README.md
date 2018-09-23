@@ -1,5 +1,5 @@
 # oneitem
-OneItem is a universal HTML generator for php
+OneItem is a universal HTML structure generator for php
 
 No more: 
  echo '&lt;h2 id="my-id" class="my-class"&gt;My Header&lt;/h2&gt;';
