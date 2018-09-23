@@ -1,4 +1,4 @@
-# oneitem
+# oneitem (php class)
 OneItem is a universal HTML structure generator for php
 
 No more: 
